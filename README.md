@@ -5,6 +5,7 @@ MySQL 5.7.21 or newer running on localhost
 
 
 Python code dependencies:
+Python 3.7
 mysql-connector
 matplotlib
 
