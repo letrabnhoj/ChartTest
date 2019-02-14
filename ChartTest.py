@@ -6,6 +6,8 @@ import struct	#For converting hex string to signed int.
 
 ##External dependencies
 import mysql.connector	#For Connecting to DB.
+import matplotlib.pyplot as plt 	#For plotting the points.
+import matplotlib.animation as animation 	#Setting a interval to change plot.
 
 #Database connections settings
 mydb = mysql.connector.connect(
@@ -19,7 +21,13 @@ tableCall = mydb.cursor()	#Connection var.
 tableCall.execute(sql)
 result = tableCall.fetchall()	#Var to hold database query result.
 
+figure = plt.figure()	#Create a figure for plots.
+chart = figure.add_subplot(1,1,1)	#Adds generic subplot that can be cleared and changed.
+
+point = [[],[]]		#coordinate array.
+xPos = 850		#Starting x pox so it can start at 850 MHZ.
 index = 0
+
 temp = binascii.hexlify(bytes(result[index][1].decode('utf-8'), 'utf-16-BE')).decode('utf-8') #Converts the block to a hex string. 
 
 #Slices string into 16 piece strings because during conversion each bin char was converted to 8-bit hex.
@@ -35,4 +43,20 @@ for i in range(0, len(temp)+1, 16):
         continue
     else:	#Converts hex string to signed int and divide by 1k.
         yPos = struct.unpack('>i', bytes.fromhex(tempHex))[0]/1000
-        print(yPos)
+        #print(yPos)
+        point[0].append(xPos)
+        point[1].append(yPos)
+        xPos+=0.5
+
+
+chart.plot(point[0], point[1], color = "yellow", linewidth = 0.7)	#plots the graph.
+chart.axis([850, 1150, -60, -30])
+chart.set_xlabel(result[index][2])		#Date stamp along xaxis.
+chart.set_yticks([-60, -50, -40, -30])
+chart.set_yticklabels(['-60 dBm', '-50 dBm','-40 dBm','-30 dBm'])
+chart.set_xticks([850,1000,1150])
+chart.set_xticklabels(['850 MHZ','1000 MHZ','1150 MHZ'])
+chart.set_title("Trace ID: "+str(result[index][0]))   #trace_id along y.
+chart.grid(linestyle='--', linewidth='0.4', color='grey')	#inner grid marks.
+chart.set_facecolor('black')
+plt.show()
